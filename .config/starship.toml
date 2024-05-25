@@ -1,0 +1,87 @@
+format = """[\\[$os$hostname\\]](bold fg:#e28c00) $username$shell$directory\
+$fossil_branch$git_branch$git_commit$git_state$git_metrics$git_status\
+$fill\
+$conda$memory_usage$cmd_duration$status
+$character"""
+
+command_timeout = 1000
+
+[os]
+disabled = false
+format = '[$symbol]($style)'
+style = 'bold cyan'
+
+[os.symbols]
+Windows = "田 "
+
+[hostname]
+format = '| [$ssh_symbol$hostname]($style)'
+ssh_only = false
+ssh_symbol = '🌏 '
+style = 'bold fg:#e28c00'
+
+[username]
+show_always = true
+format = '[$user]($style) @ '
+style_user = 'bold fg:#ebcd00'
+style_root = 'bold fg:#ffcc00'
+
+[directory]
+style = 'bold fg:#00C6F7'
+truncation_length = 3
+# truncation_symbol = '…/'
+fish_style_pwd_dir_length = 1
+
+[git_branch]
+symbol = ''
+style = 'bold purple'
+ignore_branches = ['master', 'main']
+
+[git_metrics]
+disabled = false
+
+[conda]
+symbol = ''
+format = '[\[$symbol[$environment]($style)\]](bold fg:#4584b6) '
+style = 'bold blue'
+
+[deno]
+format = '[\[[$symbol$version]($style)\]](bold fg:#5b9e29) '
+symbol = '🦕'
+
+[nodejs]
+symbol = ''
+format = '[\[[$symbol$version]($style)\]](bold fg:#5b9e29) '
+
+[memory_usage]
+disabled = false
+format = '[${ram}]($style) '
+style = 'bold dimmed white'
+threshold = 60
+
+[cmd_duration]
+min_time = 1_000
+format = '[┋ $duration]($style)'
+show_milliseconds = true
+style = 'white'
+show_notifications = true
+min_time_to_notify = 90_000
+
+[fill]
+symbol = ' '
+
+[status]
+disabled = false
+format = '[$symbol$status]($style)'
+
+[character]
+success_symbol = '[⮞](bold green)'
+error_symbol = '[⮞](bold red)'
+
+[shell]
+bash_indicator = 'bash'
+zsh_indicator = 'zsh'
+xonsh_indicator = 'xon'
+powershell_indicator = 'pwsh'
+style = 'white'
+disabled = false
