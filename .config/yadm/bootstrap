@@ -1,0 +1,206 @@
+#!/bin/bash
+
+# BOOTSTRAP SCRIPT IN MY DOTFILES
+# This script is used to install all the necessary tools and dependencies
+
+detect_os() {
+    OS_DISTRO=unknown
+
+    # Read distribution information
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+    else
+        echo "Cannot determine the Linux distribution."
+        return 1
+    fi
+
+    # Convert ID_LIKE to a space-separated list or fall back to ID if not set
+    local DISTROS="${ID_LIKE} $ID"
+    local distro
+
+    for distro in $DISTROS; do
+        case "$distro" in
+            debian)
+                echo "Detected Debian-based system ($ID)"
+                OS_DISTRO=debian
+                return 0
+                ;;
+            fedora|rhel|centos)
+                echo "Detected Fedora-based system ($ID)"
+                OS_DISTRO=fedora
+                return 0
+                ;;
+            arch)
+                echo "Detected Arch-based system ($ID)"
+                OS_DISTRO=arch
+                return 0
+                ;;
+        esac
+    done
+
+    echo "Unsupported Linux distribution: $ID"
+    return 1
+}
+
+prepare_package_manager() {
+    case "$OS_DISTRO" in
+        debian)
+            sudo apt update
+            sudo apt install software-properties-common -y
+            ;;
+        fedora)
+            sudo dnf check-update
+            ;;
+        arch)
+            sudo pacman -Sy
+            ;;
+    esac
+    return 0
+}
+
+install_git() {
+    # Check if Git is already installed
+    if command -v git &> /dev/null; then
+        echo "Git is already installed."
+        return 0
+    fi
+
+    echo "Installing Git..."
+
+    case "$OS_DISTRO" in
+        debian)
+            sudo apt install git -y
+            ;;
+        fedora)
+            sudo dnf install git -y
+            ;;
+        arch)
+            sudo pacman -S --noconfirm git
+            ;;
+    esac
+}
+
+install_zsh() {
+    # Check if Zsh is already installed
+    if command -v zsh &> /dev/null; then
+        echo "Zsh is already installed."
+        return 0
+    fi
+
+    echo "Installing Zsh..."
+
+    case "$OS_DISTRO" in
+        debian)
+            sudo apt install zsh -y
+            ;;
+        fedora)
+            sudo dnf install zsh -y
+            ;;
+        arch)
+            sudo pacman -S --noconfirm zsh
+            ;;
+    esac
+}
+
+set_default_shell() {
+    # Check if Zsh is the default shell
+    if [ "$SHELL" = "$(command -v zsh)" ]; then
+        echo "Zsh is already the default shell."
+        return 0
+    fi
+
+    echo "Setting Zsh as the default shell..."
+
+    # detect if chsh is available
+    if ! command -v chsh &> /dev/null; then
+        if [ "$OS_DISTRO" = "fedora" ]; then
+            sudo dnf install util-linux-user -y
+        else
+            echo "chsh is not available. Please change the default shell manually."
+            return 1
+        fi
+    fi
+
+    sudo chsh -s "$(command -v zsh)" $USER
+}
+
+install_antidote() {
+    # Check if Antidote is already installed
+    if [ -d "$HOME/.antidote" ]; then
+        echo "Antidote is already installed."
+        return 0
+    fi
+
+    echo "Installing Antidote..."
+
+    git clone --depth=1 https://github.com/mattmc3/antidote.git ${ZDOTDIR:-$HOME}/.antidote
+}
+
+install_helix() {
+    # Check if Helix is already installed
+    if command -v hx &> /dev/null; then
+        echo "Helix is already installed."
+        return 0
+    fi
+
+    echo "Installing Helix..."
+
+    case "$OS_DISTRO" in
+        debian)
+            sudo add-apt-repository ppa:maveonair/helix-editor -y
+            sudo apt update
+            sudo apt install helix -y
+            ;;
+        fedora)
+            sudo dnf install helix -y
+            ;;
+        arch)
+            sudo pacman -S --noconfirm helix
+            ;;
+    esac
+}
+
+install_micro() {
+    # Check if Micro is already installed
+    if command -v micro &> /dev/null; then
+        echo "Micro is already installed."
+        return 0
+    fi
+
+    echo "Installing Micro..."
+
+    su - root -c "cd /usr/bin; wget -O- https://getmic.ro | GETMICRO_REGISTER=y sh"
+
+    if [ $? -ne 0 ]; then
+        echo "Failed to install Micro."
+        return 1
+    fi
+}
+
+install_starship() {
+    # Check if Starship is already installed
+    if command -v starship &> /dev/null; then
+        echo "Starship is already installed."
+        return 0
+    fi
+
+    echo "Installing Starship..."
+
+    curl -fsSL https://starship.rs/install.sh | bash
+}
+
+main() {
+    detect_os || return 1
+    prepare_package_manager || return 1
+    install_git || return 1
+    install_zsh || return 1
+    install_antidote || return 1
+    install_helix || return 1
+    install_micro || return 1
+    install_starship || return 1
+    set_default_shell || return 1
+}
+
+echo "Preparing to install tools and dependencies..."
+main
+
