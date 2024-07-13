@@ -227,6 +227,29 @@ install_micromamba() {
     bash <(curl -L micro.mamba.pm/install.sh)
 }
 
+install_pipx() {
+    # Check if pipx is already installed
+    if command -v pipx &> /dev/null; then
+        echo_highlight "pipx is already installed."
+        return 0
+    fi
+
+    echo_highlight "Installing pipx..."
+    case "$OS_DISTRO" in
+        debian)
+            sudo apt install pipx -y
+            ;;
+        fedora)
+            sudo dnf install pipx -y
+            ;;
+        arch)
+            sudo pacman -S --noconfirm python-pipx
+            ;;
+    esac
+    sudo pipx ensurepath
+}
+
+
 upgrade_system() {
     case "$OS_DISTRO" in
         debian)
@@ -253,6 +276,7 @@ main() {
     install_micro || return 1
     install_starship || return 1
     install_micromamba || return 1
+    install_pipx || return 1
     set_default_shell || return 1
 
     if $UPGRADE_PACKAGES; then
