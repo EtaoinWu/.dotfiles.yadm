@@ -1,0 +1,22 @@
+{
+    "preset": "aroace1",
+    "mode": "rgb",
+    "light_dark": "dark",
+    "lightness": 0.5,
+    "color_align": {
+        "mode": "custom",
+        "custom_colors": {
+            "1": 3,
+            "2": 0,
+            "4": 2,
+            "3": 1,
+            "5": 4
+        },
+        "fore_back": []
+    },
+    "backend": "neofetch",
+    "args": null,
+    "distro": null,
+    "pride_month_shown": [],
+    "pride_month_disable": false
+}
