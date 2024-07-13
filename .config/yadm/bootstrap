@@ -212,6 +212,21 @@ install_starship() {
     curl -fsSL https://starship.rs/install.sh | sh
 }
 
+install_micromamba() {
+    # Check if Micromamba is already installed
+    if command -v micromamba &> /dev/null; then
+        echo_highlight "Micromamba is already installed."
+        if $UPGRADE_PACKAGES; then
+            echo_highlight "Upgrading Micromamba..."
+            micromamba self-update
+        fi
+        return 0
+    fi
+
+    echo_highlight "Installing Micromamba..."
+    bash <(curl -L micro.mamba.pm/install.sh)
+}
+
 upgrade_system() {
     case "$OS_DISTRO" in
         debian)
@@ -237,6 +252,7 @@ main() {
     install_helix || return 1
     install_micro || return 1
     install_starship || return 1
+    install_micromamba || return 1
     set_default_shell || return 1
 
     if $UPGRADE_PACKAGES; then
