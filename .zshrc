@@ -4,4 +4,4 @@
 # functions, options, key bindings, etc.
 #
 
-source .zshrc_managed
+source $HOME/.zshrc_managed
