@@ -249,6 +249,18 @@ install_pipx() {
     sudo pipx ensurepath
 }
 
+install_pipx_packages() {
+    PIPX_PACKAGES=(
+        "mypy"
+        "hyfetch"
+    )
+
+    echo_highlight "Installing pipx packages..."
+    for package in "${PIPX_PACKAGES[@]}"; do
+        echo_highlight "Installing pipx: $package..."
+        pipx install $package || return 1
+    done
+}
 
 upgrade_system() {
     case "$OS_DISTRO" in
@@ -277,6 +289,7 @@ main() {
     install_starship || return 1
     install_micromamba || return 1
     install_pipx || return 1
+    install_pipx_packages || return 1
     set_default_shell || return 1
 
     if $UPGRADE_PACKAGES; then
