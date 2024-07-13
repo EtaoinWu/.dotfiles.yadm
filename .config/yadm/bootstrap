@@ -187,7 +187,7 @@ install_micro() {
       echo_highlight "Installing Micro..."
     fi
 
-    su - root -c "cd /usr/bin; wget -O- https://getmic.ro | GETMICRO_REGISTER=y sh"
+    sudo bash -c "cd /usr/bin; wget -O- https://getmic.ro | GETMICRO_REGISTER=y sh"
 
     if [ $? -ne 0 ]; then
         echo_highlight "Failed to install Micro."
@@ -209,7 +209,7 @@ install_starship() {
         echo_highlight "Installing Starship..."
     fi
 
-    curl -fsSL https://starship.rs/install.sh | bash
+    curl -fsSL https://starship.rs/install.sh | sh
 }
 
 upgrade_system() {
@@ -253,5 +253,14 @@ if [ "$1" = "--upgrade" ]; then
     UPGRADE_PACKAGES=true
     echo_highlight "Upgrade option enabled."
 fi
+
+for bootstrap_option in "$BOOTSTRAP_OPTIONS"; do
+    case $bootstrap_option in
+        upgrade)
+            UPGRADE_PACKAGES=true
+            echo_highlight "Upgrade option enabled."
+            ;;
+    esac
+done
 
 main
