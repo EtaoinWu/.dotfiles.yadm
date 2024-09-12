@@ -88,6 +88,50 @@ install_git() {
     esac
 }
 
+install_wget() {
+    # Check if Wget is already installed
+    if command -v wget &> /dev/null; then
+        echo_highlight "Wget is already installed."
+        return 0
+    fi
+
+    echo_highlight "Installing Wget..."
+
+    case "$OS_DISTRO" in
+        debian)
+            sudo apt install wget -y
+            ;;
+        fedora)
+            sudo dnf install wget -y
+            ;;
+        arch)
+            sudo pacman -S --noconfirm wget
+            ;;
+    esac
+}
+
+install_curl() {
+    # Check if Curl is already installed
+    if command -v curl &> /dev/null; then
+        echo_highlight "Curl is already installed."
+        return 0
+    fi
+
+    echo_highlight "Installing Curl..."
+
+    case "$OS_DISTRO" in
+        debian)
+            sudo apt install curl -y
+            ;;
+        fedora)
+            sudo dnf install curl -y
+            ;;
+        arch)
+            sudo pacman -S --noconfirm curl
+            ;;
+    esac
+}
+
 install_zsh() {
     # Check if Zsh is already installed
     if command -v zsh &> /dev/null; then
@@ -282,6 +326,8 @@ main() {
     detect_os || return 1
     prepare_package_manager || return 1
     install_git || return 1
+    install_wget || return 1
+    install_curl || return 1
     install_zsh || return 1
     install_antidote || return 1
     install_helix || return 1
