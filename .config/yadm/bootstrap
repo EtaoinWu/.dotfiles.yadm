@@ -7,6 +7,10 @@ UPGRADE_PACKAGES="${UPGRADE_PACKAGES:-false}"
 INSTALL_EPEL="${INSTALL_EPEL:-true}"
 INSTALL_RPMFUSION="${INSTALL_RPMFUSION:-true}"
 INSTALL_DOCKER="${INSTALL_DOCKER:-false}"
+TAILSCALE_AUTHKEY="${TAILSCALE_AUTHKEY:-}"
+TAILSCALE_SERVER="${TAILSCALE_SERVER:-}"
+TAILSCALE_EXTRA_COMMANDS_DEFAULT="--accept-dns=false --advertise-exit-node"
+TAILSCALE_EXTRA_COMMANDS="${TAILSCALE_EXTRA_COMMANDS:-$TAILSCALE_EXTRA_COMMANDS_DEFAULT}"
 
 # usage: echo_highlight "message"
 # display a message in yellow
@@ -317,6 +321,41 @@ install_docker() {
     sudo docker run hello-world
 }
 
+install_tailscale() {
+    if [ -z "$TAILSCALE_AUTHKEY" ]; then
+        echo_highlight "TAILSCALE_AUTHKEY is not set. Skipping Tailscale installation."
+        return 0
+    fi
+    if command -v tailscale &> /dev/null; then
+        echo_highlight "Tailscale is already installed."
+        return 0
+    fi
+
+    echo_highlight "Installing Tailscale..."
+    
+    curl -fsSL https://tailscale.com/install.sh | sh
+
+    if [ $? -ne 0 ]; then
+        echo_highlight "Failed to install Tailscale."
+        return 1
+    fi
+
+    TAILSCALE_COMMANDS="sudo tailscale up --authkey $TAILSCALE_AUTHKEY"
+    if [ -n "$TAILSCALE_SERVER" ]; then
+        TAILSCALE_COMMANDS="$TAILSCALE_COMMANDS --login-server $TAILSCALE_SERVER"
+    fi
+    TAILSCALE_COMMANDS="$TAILSCALE_COMMANDS $TAILSCALE_EXTRA_COMMANDS"
+    echo "Running the following command to connect to Tailscale:"
+    echo "$TAILSCALE_COMMANDS"
+
+    $TAILSCALE_COMMANDS
+
+    if [ $? -ne 0 ]; then
+        echo_highlight "Failed to connect to Tailscale."
+        return 1
+    fi
+}
+
 upgrade_system() {
     case "$OS_DISTRO" in
         ubuntu|debian)
@@ -348,6 +387,7 @@ main() {
     install_pipx || return 1
     install_pipx_packages || return 1
     set_default_shell || return 1
+    install_tailscale || return 1
 
     if $INSTALL_DOCKER; then
         install_docker || return 1
