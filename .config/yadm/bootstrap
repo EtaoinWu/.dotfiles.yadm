@@ -7,6 +7,7 @@ UPGRADE_PACKAGES="${UPGRADE_PACKAGES:-false}"
 INSTALL_EPEL="${INSTALL_EPEL:-true}"
 INSTALL_RPMFUSION="${INSTALL_RPMFUSION:-true}"
 INSTALL_DOCKER="${INSTALL_DOCKER:-false}"
+INSTALL_KOPIA="${INSTALL_KOPIA:-false}"
 TAILSCALE_AUTHKEY="${TAILSCALE_AUTHKEY:-}"
 TAILSCALE_SERVER="${TAILSCALE_SERVER:-}"
 TAILSCALE_EXTRA_COMMANDS_DEFAULT="--accept-dns=false --advertise-exit-node"
@@ -356,6 +357,39 @@ install_tailscale() {
     fi
 }
 
+install_kopia() {
+    if command -v kopia &> /dev/null; then
+        echo_highlight "Kopia is already installed."
+        return 0
+    fi
+
+    echo_highlight "Installing Kopia..."
+
+    case "$OS_DISTRO" in
+        ubuntu|debian)
+            curl -s https://kopia.io/signing-key | sudo gpg --dearmor -o /etc/apt/keyrings/kopia-keyring.gpg
+            echo "deb [signed-by=/etc/apt/keyrings/kopia-keyring.gpg] http://packages.kopia.io/apt/ stable main" | sudo tee /etc/apt/sources.list.d/kopia.list
+            sudo apt update
+            sudo apt install kopia -y
+            ;;
+        fedora)
+            rpm --import https://kopia.io/signing-key
+            cat <<EOF | sudo tee /etc/yum.repos.d/kopia.repo
+[Kopia]
+name=Kopia
+baseurl=http://packages.kopia.io/rpm/stable/\$basearch/
+gpgcheck=1
+enabled=1
+gpgkey=https://kopia.io/signing-key
+EOF
+            sudo dnf install kopia -y
+            ;;
+        arch)
+            sudo yay -S --noconfirm kopia-bin
+            ;;
+    esac
+}
+
 upgrade_system() {
     case "$OS_DISTRO" in
         ubuntu|debian)
@@ -391,6 +425,10 @@ main() {
 
     if $INSTALL_DOCKER; then
         install_docker || return 1
+    fi
+
+    if $INSTALL_KOPIA; then
+        install_kopia || return 1
     fi
 
     if $UPGRADE_PACKAGES; then
