@@ -373,7 +373,7 @@ install_kopia() {
             sudo apt install kopia -y
             ;;
         fedora)
-            rpm --import https://kopia.io/signing-key
+            sudo rpm --import https://kopia.io/signing-key
             cat <<EOF | sudo tee /etc/yum.repos.d/kopia.repo
 [Kopia]
 name=Kopia

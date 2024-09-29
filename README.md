@@ -23,5 +23,6 @@ export INSTALL_DOCKER=true
   export TAILSCALE_AUTHKEY=your-tailscale-authkey
   # if you want to connect to a specific tailscale network:
   export TAILSCALE_SERVER=https://your-tailnet-coordinator.example.com
+export INSTALL_KOPIA=true
 yadm bootstrap
 ```
