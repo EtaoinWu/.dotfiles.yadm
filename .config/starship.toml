@@ -44,6 +44,7 @@ disabled = false
 symbol = ''
 format = '[\[$symbol[$environment]($style)\]](bold fg:#4584b6) '
 style = 'bold blue'
+detect_env_vars = []
 
 [deno]
 format = '[\[[$symbol$version]($style)\]](bold fg:#5b9e29) '
