@@ -8,6 +8,8 @@
 path+=("$HOME/.local/bin")
 export PATH
 
+fpath+=(~/.pixi/completions/zsh)
+
 autoload -U compinit
 compinit
 
@@ -66,3 +68,4 @@ eval "$(starship init zsh)"
 
 ## aliases
 alias ll='ls -alh --color=auto'
+alias hyfetch='hyfetch -b fastfetch'

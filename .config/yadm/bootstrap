@@ -46,8 +46,14 @@ detect_os() {
                 OS_DISTRO=debian
                 return 0
                 ;;
-            fedora|rhel|centos)
+            fedora)
                 echo_highlight "Detected Fedora-based system ($ID)"
+                OS_DISTRO=fedora
+                INSTALL_EPEL=false
+                return 0
+                ;;
+            rhel|centos)
+                echo_highlight "Detected RHEL-based system ($ID)"
                 OS_DISTRO=fedora
                 return 0
                 ;;
@@ -237,6 +243,44 @@ install_starship() {
     curl -fsSL https://starship.rs/install.sh | sh
 }
 
+install_pixi() {
+	if command -v pixi &> /dev/null; then
+		echo_highlight "Pixi is already installed."
+        if $UPGRADE_PACKAGES; then
+            echo_highlight "Upgrading Pixi..."
+            pixi self-update
+        fi
+        return 0
+    fi
+    curl -fsSL https://pixi.sh/install.sh | sh
+    export PATH=$HOME/.pixi/bin:$PATH
+}
+
+install_pixi_global_packages() {
+	PIXI_GLOBAL_PACKAGES=(
+		"hyfetch"
+	)
+	
+	echo_highlight "Installing pixi global packages..."
+    for package in "${PIXI_GLOBAL_PACKAGES[@]}"; do
+        echo_highlight "Installing pixi: $package..."
+        pixi global install $package || return 1
+    done
+}
+
+install_uv() {
+	if command -v uv &> /dev/null; then
+		echo_highlight "uv is already installed."
+        if $UPGRADE_PACKAGES; then
+            echo_highlight "Upgrading uv..."
+            uv uv self update
+        fi
+        return 0
+    fi
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+}
+
+# DEPRECATED
 install_micromamba() {
     # Check if Micromamba is already installed
     if command -v micromamba &> /dev/null; then
@@ -252,11 +296,13 @@ install_micromamba() {
     bash <(curl -L micro.mamba.pm/install.sh)
 }
 
+# DEPRECATED
 install_pipx() {
     meta_install_dispatch "pipx" "pipx" "pipx" "pipx" "python-pipx"
     sudo pipx ensurepath
 }
 
+# DEPRECATED
 install_pipx_packages() {
     PIPX_PACKAGES=(
         "mypy"
@@ -417,9 +463,12 @@ main() {
     install_helix || return 1
     install_micro || return 1
     install_starship || return 1
-    install_micromamba || return 1
-    install_pipx || return 1
-    install_pipx_packages || return 1
+    # install_micromamba || return 1
+    # install_pipx || return 1
+    # install_pipx_packages || return 1
+    install_pixi || return 1
+    install_uv || return 1
+    install_pixi_global_packages || return 1
     set_default_shell || return 1
     install_tailscale || return 1
 
